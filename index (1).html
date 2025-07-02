@@ -1,0 +1,407 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Portfolio of Kapil Sharma, an Electrical Engineer with expertise in electrical systems, communication networks, and site engineering." />
+    <meta name="keywords" content="Electrical Engineer, Portfolio, Kapil Sharma, Engineering, Communication Networks" />
+    <title>Kapil Sharma | Electrical Engineer</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #f4f4f4;
+            --text: #333;
+            --card: #fff;
+            --accent: #00aaff;
+        }
+
+        body.dark-mode {
+            --bg: #121212;
+            --text: #eee;
+            --card: #1e1e1e;
+            --accent: #00c6ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #1e1e1e;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        nav a {
+            color: #fff;
+            margin: 0 10px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        nav a:hover {
+            color: var(--accent);
+        }
+
+        .dark-toggle {
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #fff;
+            margin-left: 10px;
+        }
+
+        .dark-toggle:focus {
+            outline: 2px solid var(--accent);
+        }
+
+        header {
+            background: linear-gradient(to right, #1e1e1e, #2c3e50);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        section {
+            padding: 50px 20px;
+            max-width: 960px;
+            margin: 40px auto;
+            background: var(--card);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .experience ul {
+            margin-left: 20px;
+        }
+
+        .skills ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skills li {
+            background-color: #e0e0e0;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: default;
+            transition: 0.3s ease;
+        }
+
+        body.dark-mode .skills li {
+            background-color: #2a2a2a;
+        }
+
+        .skills li:hover {
+            background-color: #d0d0d0;
+            transform: scale(1.05);
+        }
+
+        .contact a {
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .projects .project {
+            background-color: var(--bg);
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .project a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        footer {
+            background-color: #1e1e1e;
+            color: #aaa;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        #scrollTopBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 18px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: none;
+            z-index: 1001;
+            cursor: pointer;
+        }
+
+        .whatsapp-float {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .whatsapp-float a {
+            background-color: #25D366;
+            color: white;
+            padding: 12px 15px;
+            border-radius: 50%;
+            font-size: 20px;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 600px) {
+            nav {
+                flex-direction: column;
+                padding: 10px;
+            }
+
+            nav a {
+                font-size: 0.9rem;
+                margin: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div><a href="#">Kapil Sharma</a></div>
+        <div>
+            <a href="#about">About</a>
+            <a href="#experience">Experience</a>
+            <a href="#education">Education</a>
+            <a href="#projects">Projects</a>
+            <a href="#skills">Skills</a>
+            <a href="#contact">Contact</a>
+            <span class="dark-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">🌙</span>
+        </div>
+    </nav>
+
+    <header>
+        <h1>Kapil Sharma</h1>
+        <p>Electrical Engineer | Open to New Opportunities</p>
+    </header>
+
+    <section id="about">
+        <h2>About Me</h2>
+        <p>I am a B.Tech graduate in Electrical Engineering with a passion for designing and maintaining electrical systems and communication networks. I have hands-on experience in on-site technical support, system optimization, and team collaboration. I’m committed to continuous learning and seeking exciting career opportunities in electrical and core engineering roles.</p>
+    </section>
+
+    <section id="experience">
+        <h2>Experience</h2>
+        <ul>
+            <li>
+                <strong>Engineer, Commtel Networks Pvt Ltd</strong> (Apr 2025 – Present)<br>
+                Working on communication network maintenance and optimization, specializing in SDH systems and site engineering tasks.
+            </li>
+            <li>
+                <strong>Electrical Engineer, Maintenance Department, GK Industry</strong> (2023 – 2024)<br>
+                Provided on-site technical support for electrical systems, reducing downtime by 15% through proactive maintenance and inspections.
+            </li>
+        </ul>
+    </section>
+
+    <section id="education">
+        <h2>Education</h2>
+        <p><strong>B.Tech in Electrical Engineering</strong><br>Completed from Central University of Haryana – 2022</p>
+    </section>
+
+    <section id="projects" class="projects">
+        <h2>Projects</h2>
+        <div class="project">
+            <h3>Smart Grid Monitor</h3>
+            <p>Designed a system to monitor electrical grid performance using Arduino, sensors, and Python for data analysis. Reduced anomaly detection time by 30%.</p>
+            <a href="https://github.com/KapilSharma180922/smart-grid-monitor" target="_blank">View on GitHub</a>
+        </div>
+        <div class="project">
+            <h3>Solar Panel Optimizer</h3>
+            <p>Developed a microcontroller-based system to optimize solar panel efficiency using Arduino and IoT for real-time monitoring.</p>
+            <a href="https://github.com/KapilSharma180922/solar-optimizer" target="_blank">View on GitHub</a>
+        </div>
+        <div class="project">
+            <h3>LED Control System</h3>
+            <p>Built a simple LED brightness control system using PWM (Pulse Width Modulation) with Arduino, controlled via a potentiometer.</p>
+            <a href="https://github.com/KapilSharma180922/led-control-system" target="_blank">View on GitHub</a>
+        </div>
+        <div class="project">
+            <h3>Network Packet Sniffer</h3>
+            <p>Created a basic packet sniffer using Python and Scapy to monitor network traffic, useful for learning network diagnostics.</p>
+            <a href="https://github.com/KapilSharma180922/network-packet-sniffer" target="_blank">View on GitHub</a>
+        </div>
+        <div class="project">
+            <h3>Temperature Monitoring System</h3>
+            <p>Designed a temperature monitoring system using a DHT11 sensor and Arduino, with data displayed on an LCD screen.</p>
+            <a href="https://github.com/KapilSharma180922/temperature-monitoring" target="_blank">View on GitHub</a>
+        </div>
+    </section>
+
+    <section id="skills" class="skills">
+        <h2>Skills</h2>
+        <ul>
+            <li>Electrical Maintenance</li>
+            <li>Site Engineer</li>
+            <li>Communication Networks</li>
+            <li>SDH Maintenance</li>
+            <li>Python</li>
+            <li>MS Office</li>
+            <li>HTML</li>
+            <li>C Programming</li>
+            <li>Arduino</li>
+            <li>IoT Systems</li>
+        </ul>
+    </section>
+
+    <section id="contact" class="contact">
+        <h2>Contact</h2>
+        <p>Email: <a href="mailto:ks805858@gmail.com">ks805858@gmail.com</a></p>
+        <p>LinkedIn: <a href="https://www.linkedin.com/in/kapilsharma7689936745" target="_blank">linkedin.com/in/kapilsharma7689936745</a></p>
+        <p>GitHub: <a href="https://github.com/KapilSharma180922" target="_blank">github.com/KapilSharma180922</a></p>
+    </section>
+
+    <footer>
+        <p>© 2025 Kapil Sharma</p>
+    </footer>
+
+    <button id="scrollTopBtn" onclick="scrollToTop()">↑</button>
+
+    <div class="whatsapp-float">
+        <a href="https://wa.me/917689936745" target="_blank" title="Chat on WhatsApp">💬</a>
+    </div>
+
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+            const toggle = document.querySelector(".dark-toggle");
+            toggle.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        window.onscroll = () => {
+            const btn = document.getElementById("scrollTopBtn");
+            btn.style.display = window.scrollY > 300 ? "block" : "none";
+        };
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("visible");
+                    }
+                });
+            },
+            { threshold: 0.1 }
+        );
+
+        document.querySelectorAll("section").forEach((section) => {
+            observer.observe(section);
+        });
+
+        function adjustHeaderMargin() {
+            const navHeight = document.querySelector("nav").offsetHeight;
+            document.querySelector("header").style.marginTop = `${navHeight}px`;
+        }
+        window.addEventListener("resize", adjustHeaderMargin);
+        window.addEventListener("load", adjustHeaderMargin);
+    </script>
+</body>
+</html>
